@@ -37,6 +37,7 @@ function columnIsHeader(map, table, col) {
 // Add a column at the given position in a table.
 export function addColumn(tr, {map, tableStart, table}, col) {
   let refColumn = col > 0 ? -1 : 0
+  const mapFrom = tr.mapping.maps.length
   if (columnIsHeader(map, table, col + refColumn))
     refColumn = col == 0 || col == map.width ? null : 0
 
@@ -45,7 +46,7 @@ export function addColumn(tr, {map, tableStart, table}, col) {
     // If this position falls inside a col-spanning cell
     if (col > 0 && col < map.width && map.map[index - 1] == map.map[index]) {
       let pos = map.map[index], cell = table.nodeAt(pos)
-      tr.setNodeMarkup(tr.mapping.map(tableStart + pos), null,
+      tr.setNodeMarkup(tr.doc.resolve(tr.mapping.slice(mapFrom).map(tableStart + pos)), null,
                        addColSpan(cell.attrs, col - map.colCount(pos)))
       // Skip ahead if rowspan > 1
       row += cell.attrs.rowspan - 1
@@ -53,7 +54,7 @@ export function addColumn(tr, {map, tableStart, table}, col) {
       let type = refColumn == null ? tableNodeTypes(table.type.schema).cell
           : table.nodeAt(map.map[index + refColumn]).type
       let pos = map.positionAt(row, col, table)
-      tr.insert(tr.mapping.map(tableStart + pos), type.createAndFill())
+      tr.insert(tr.doc.resolve(tr.mapping.slice(mapFrom).map(tableStart + pos)).pos, type.createAndFill())
     }
   }
   return tr
